@@ -1,0 +1,62 @@
+-- ShiftLock FE Universal Movible (Móvil + PC)
+
+local player = game.Players.LocalPlayer
+local runService = game:GetService("RunService")
+local camera = workspace.CurrentCamera
+
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+local shiftLockEnabled = false
+
+-- Crear GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ShiftLockMobile"
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Crear el botón
+local button = Instance.new("TextButton")
+button.Parent = screenGui
+button.Size = UDim2.new(0, 120, 0, 50)
+button.Position = UDim2.new(0.02, 0, 0.85, 0)
+button.Text = "ShiftLock OFF"
+button.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.Font = Enum.Font.SourceSansBold
+button.TextScaled = true
+button.Active = true
+button.Draggable = true  -- Hacemos que el botón sea movible
+
+local function updateButton()
+	if shiftLockEnabled then
+		button.Text = "ShiftLock ON"
+		button.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+	else
+		button.Text = "ShiftLock OFF"
+		button.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+	end
+end
+
+button.MouseButton1Click:Connect(function()
+	shiftLockEnabled = not shiftLockEnabled
+	updateButton()
+end)
+
+-- Rotación del personaje FE
+runService.RenderStepped:Connect(function()
+	if shiftLockEnabled and character and humanoidRootPart then
+		local camCF = camera.CFrame
+		local camLook = camCF.LookVector
+		local angle = math.atan2(-camLook.X, -camLook.Z)
+		humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position) * CFrame.Angles(0, angle, 0)
+	end
+end)
+
+-- Si respawnea el personaje
+player.CharacterAdded:Connect(function(char)
+	character = char
+	humanoidRootPart = char:WaitForChild("HumanoidRootPart")
+end)
+
+-- Estado inicial
+updateButton()
